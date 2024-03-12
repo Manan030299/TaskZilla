@@ -1,0 +1,47 @@
+import React from 'react';
+import {Box} from '@mui/material';
+import {Typography} from '@mui/material';
+import error from '../../assets/Images/error.png';
+
+export const NoAccess = () => {
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+      }}>
+      <Box
+        sx={{
+          padding: '20px',
+          display: 'flex',
+          justifyContent: 'end',
+        }}>
+        <Typography variant='h3'>
+            TaskZilla
+        </Typography>
+      </Box>
+      <Box sx={{
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        marginTop: '150px',
+        justifyContent: 'center',
+      }}>
+        <img
+          style={{
+            height: '300px',
+            width: '100%',
+          }}
+          src={error} alt='error'
+        />
+        <Typography
+          variant="h4"
+          sx={{
+            maxWidth: '50vw',
+            whiteSpace: 'pre-line',
+          }}>
+            Sorry, You don&rsquo;t have access for the project.
+        </Typography>
+      </Box>
+    </Box>
+  );
+};

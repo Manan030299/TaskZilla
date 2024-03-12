@@ -1,0 +1,421 @@
+import React, {useEffect, useState} from 'react';
+import PropTypes from 'prop-types';
+import {Avatar} from '@mui/material';
+import {Box} from '@mui/material';
+import {Grid} from '@mui/material';
+import {InputLabel} from '@mui/material';
+import {TextField} from '@mui/material';
+import {Button} from '@mui/material';
+import {Dialog} from '@mui/material';
+import {FormControl} from '@mui/material';
+import {MenuItem} from '@mui/material';
+import {Select} from '@mui/material';
+import {Typography} from '@mui/material';
+import KeyboardDoubleArrowUpIcon
+  from '@mui/icons-material/KeyboardDoubleArrowUp';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import DragHandleIcon from '@mui/icons-material/DragHandle';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardDoubleArrowDownIcon
+  from '@mui/icons-material/KeyboardDoubleArrowDown';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BoltIcon from '@mui/icons-material/Bolt';
+import DoneIcon from '@mui/icons-material/Done';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import {Editor} from 'react-draft-wysiwyg';
+import {EditorState, convertToRaw, ContentState} from 'draft-js';
+import htmlToDraft from 'html-to-draftjs';
+
+export const UpdateIssue = (props) => {
+  const {handleUpdateOpen, handleUpdateClose, selectedIssue,
+    projectDetail, handleIssueChange, handleUpdate, activeUsersData,
+    handleModified, handleDescriptionIssueChange} = props;
+
+  const [editorState, setEditorState] = useState(EditorState.createEmpty());
+
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday',
+    'Thursday', 'Friday', 'Saturday'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+  useEffect(() => {
+    const descriptionValue = convertToRaw(editorState.getCurrentContent());
+    handleDescriptionIssueChange(
+        'description', descriptionValue.blocks[0].text);
+  }, [editorState]);
+
+  useEffect(() => {
+    if (selectedIssue.description) {
+      htmlToDraftBlocks(selectedIssue.description);
+    }
+  }, [selectedIssue]);
+
+  const htmlToDraftBlocks = (value) => {
+    const blocksFromHtml = htmlToDraft(value);
+    const {contentBlocks, entityMap} = blocksFromHtml;
+    const state = ContentState.createFromBlockArray(
+        contentBlocks, entityMap);
+    const editor = EditorState.createWithContent(state);
+    setEditorState(editor);
+  };
+
+  const getFormattedDate = (date1) => {
+    const date = new Date(date1);
+    const month = months[date.getMonth()];
+    const day = days[date.getDay()];
+    return day + ', ' + date.getDate() + ' ' + month + ' ' +
+    date.getFullYear() + ' | ' + date.getHours() + ':' +
+    date.getMinutes() + ':' + date.getSeconds();
+  };
+
+  return (
+    <>
+      <Dialog
+        open={handleUpdateOpen}
+        maxWidth='lg'
+        sx={{'& .MuiDialog-paper': {
+          borderRadius: '10px',
+        }}}
+      >
+        <Grid container>
+          <Grid item xs={8}
+            sx={{
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+            }}>
+            <TextField
+              sx={{
+                marginBottom: '20px',
+                width: '250px',
+              }}
+              onChange={handleIssueChange}
+              value={selectedIssue.summary}
+              name='summary'
+            />
+            <FormControl fullWidth>
+              <InputLabel
+                id="issuetype"
+              >
+                Issue Type
+              </InputLabel>
+              <Select
+                onChange={handleIssueChange}
+                value={selectedIssue.issueType}
+                name="issueType"
+                labelId="issuetype"
+                label="Issue Type"
+                sx={{
+                  marginBottom: '20px',
+                  width: '250px',
+                  [`& .MuiSelect-select`]:
+                {
+                  display: 'inline-flex',
+                  alignItems: 'initial',
+                },
+                }}
+              >
+                <MenuItem
+                  value='STORY'>
+                  <BookmarkIcon
+                    sx={{
+                      bgcolor: '#30ca3b',
+                      color: '#FFF',
+                      padding: '2px',
+                      borderRadius: '5px',
+                      fontSize: '16px',
+                      marginRight: '10px'}} />
+                    Story
+                </MenuItem>
+                <MenuItem value='TASK'>
+                  <DoneIcon
+                    sx={{
+                      bgcolor: '#3e9fdf',
+                      color: '#FFF',
+                      padding: '2px',
+                      borderRadius: '5px',
+                      fontSize: '16px',
+                      marginRight: '10px'}} />
+                     Task
+                </MenuItem>
+                <MenuItem value='BUG'>
+                  <FiberManualRecordIcon
+                    sx={{
+                      bgcolor: '#fc3324',
+                      color: '#FFF',
+                      padding: '2px',
+                      borderRadius: '5px',
+                      fontSize: '16px',
+                      marginRight: '10px'}} />
+                      Bug
+                </MenuItem>
+                <MenuItem value='EPIC'>
+                  <BoltIcon
+                    sx={{
+                      bgcolor: '#aa08e5',
+                      color: '#FFF',
+                      padding: '2px',
+                      borderRadius: '5px',
+                      fontSize: '16px',
+                      marginRight: '10px'}} />
+                    Epic
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <Box
+              sx={{
+                marginBottom: '20px',
+              }}>
+              <Typography
+                variant='subtitle1'
+              >
+                Description
+              </Typography>
+              <Box
+                border='1px solid #00000040'
+                borderRadius='10px'
+                padding='10px'>
+                <Editor
+                  editorState={editorState}
+                  onEditorStateChange={setEditorState}
+                  wrapperClassName="demo-wrapper"
+                  editorClassName="demo-editor"
+                />
+              </Box>
+            </Box>
+          </Grid>
+          <Grid item xs={4}
+            display='flex'
+            flexDirection='column'
+            sx={{
+              padding: '20px',
+            }}>
+            <FormControl fullWidth>
+              <InputLabel
+                id="status"
+              >
+                Status
+              </InputLabel>
+              <Select
+                onChange={handleIssueChange}
+                value={selectedIssue.status}
+                name="status"
+                labelId="status"
+                label="Status"
+                sx={{
+                  marginBottom: '20px',
+                  width: '350px',
+                }}>
+                {projectDetail.status?.map((statusName, index) =>(
+                  <MenuItem
+                    key={`status_${index}`}
+                    value={statusName}
+                  >
+                    {statusName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel
+                id="assignee"
+              >
+                Assignee
+              </InputLabel>
+              <Select
+                onChange={handleIssueChange}
+                value={selectedIssue.assigneeId}
+                name="assigneeId"
+                labelId="assignee"
+                label="Assignee"
+                sx={{
+                  marginBottom: '20px',
+                  width: '350px',
+                  [`& .MuiSelect-select`]:
+               {
+                 display: 'inline-flex',
+                 alignItems: 'baseline',
+               }}}>
+                {activeUsersData.map((assignee, index) => (
+                  <MenuItem
+                    key={`invite_${index}`}
+                    value={assignee.uid}
+                  >
+                    <Avatar sx={{
+                      backgroundColor: assignee.avatarColor,
+                      marginRight: '10px',
+                      height: '35px',
+                      width: '35px'}}>
+                      {assignee.firstName[0]}
+                    </Avatar>
+                    {assignee.firstName + ' ' + assignee.lastName}
+                  </MenuItem>
+                ))}
+                <MenuItem
+                  value={'123456789'}>
+                  <Avatar
+                    sx={{
+                      marginRight: '10px',
+                      height: '35px',
+                      width: '35px'}}>
+                  </Avatar>
+                  {`Unassigned`}
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="reporter">Reporter</InputLabel>
+              <Select
+                onChange={handleIssueChange}
+                value={selectedIssue.reporterId}
+                name="reporterId"
+                labelId="reporter"
+                label="Reporter"
+                sx={{
+                  marginBottom: '20px',
+                  width: '350px',
+                  [`& .MuiSelect-select`]:
+              {
+                display: 'inline-flex',
+                alignItems: 'baseline',
+              },
+                }}>
+                {activeUsersData.map((reporter, index) => (
+                  <MenuItem
+                    key={`invite1_${index}`}
+                    value={reporter.uid}>
+                    <Avatar sx={{
+                      backgroundColor: reporter.avatarColor,
+                      marginRight: '10px',
+                      height: '35px',
+                      width: '35px'}}>
+                      {reporter.firstName[0]}
+                    </Avatar>
+                    {reporter.firstName + ' ' + reporter.lastName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="priority">Priority</InputLabel>
+              <Select
+                onChange={handleIssueChange}
+                value={selectedIssue.priority}
+                name="priority"
+                labelId="priority"
+                label="Priority"
+                sx={{
+                  marginBottom: '20px',
+                  width: '350px',
+                  [`& .MuiSelect-select`]:
+                {
+                  display: 'inline-flex',
+                  alignItems: 'flex-end',
+                },
+                }}>
+                <MenuItem
+                  value='HIGHEST'
+                >
+                  <KeyboardDoubleArrowUpIcon
+                    sx={{
+                      color: '#30ca3b',
+                      marginRight: '5px',
+                    }}/>Highest
+                </MenuItem>
+                <MenuItem
+                  value='HIGH'
+                >
+                  <KeyboardArrowUpIcon
+                    sx={{
+                      color: '#fc3324',
+                      marginRight: '5px',
+                    }} />High
+                </MenuItem>
+                <MenuItem
+                  value='MEDIUM'
+                >
+                  <DragHandleIcon
+                    sx={{
+                      color: '#cc8c0b',
+                      marginRight: '5px',
+                    }} />Medium
+                </MenuItem>
+                <MenuItem
+                  value='LOW'
+                >
+                  <KeyboardArrowDownIcon
+                    sx={{
+                      color: '#aa08e5',
+                      marginRight: '5px',
+                    }} />Low
+                </MenuItem>
+                <MenuItem
+                  value='LOWEST'
+                >
+                  <KeyboardDoubleArrowDownIcon
+                    sx={{
+                      color: '#3e9fdf',
+                      marginRight: '5px',
+                    }} />Lowest
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <Typography
+              marginTop='0px'
+              marginBottom='10px'
+              variant='body2'>
+                Created on: {getFormattedDate(selectedIssue.createdOn)}
+            </Typography>
+            {!selectedIssue.modifiedOn? '' :
+            (<Typography
+              marginTop='0px'
+              marginBottom='10px'
+              variant='body2'>
+                Modified on: {getFormattedDate(selectedIssue.modifiedOn)}
+            </Typography>)}
+            <Box marginTop='10px'>
+              <Grid gap={3}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'right',
+                }}
+              >
+                <Grid item>
+                  <Button
+                    variant='text'
+                    onClick={handleUpdateClose}
+                  >
+                    Cancel
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button
+                    variant='contained'
+                    disabled={handleModified}
+                    onClick={handleUpdate}
+                    sx={{
+                      borderRadius: '10px',
+                    }}>
+                    Modify
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+          </Grid>
+        </Grid>
+      </Dialog>
+    </>
+  );
+};
+
+UpdateIssue.propTypes = {
+  projectDetail: PropTypes.any.isRequired,
+  handleUpdateOpen: PropTypes.any.isRequired,
+  handleUpdateClose: PropTypes.any.isRequired,
+  selectedIssue: PropTypes.any.isRequired,
+  handleIssueChange: PropTypes.any.isRequired,
+  handleUpdate: PropTypes.any.isRequired,
+  activeUsersData: PropTypes.any.isRequired,
+  handleModified: PropTypes.any.isRequired,
+  handleDescriptionIssueChange: PropTypes.any.isRequired,
+};
